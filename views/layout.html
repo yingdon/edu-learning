@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>学IT - 后台管理系统</title>
+  <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="/node_modules/font-awesome/css/font-awesome.css">
+  <link rel="stylesheet" href="/node_modules/nprogress/nprogress.css">
+  <link rel="stylesheet" href="/public/less/index.css">
+	{% block style %}
+	{% endblock %}
+</head>
+
+<body>
+	{% include "header.html" %}
+  <!-- 主体 -->
+  <div class="main">
+		{% include "sidebar.html" %}
+    {% block body %}
+    {% endblock %}
+      <!-- 个人资料 -->
+      <div class="body teacher-profile">
+        <div class="profile">
+          <div class="row survey">
+            <div class="col-md-3">
+              <div class="cell money">
+                <i class="fa fa-money"></i>
+                <span>我的收入</span>
+                <h5>￥11.11</h5>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="cell th">
+                <i class="fa fa-th"></i>
+                <span>课程数量</span>
+                <h5>12</h5>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="cell user">
+                <i class="fa fa-user"></i>
+                <span>用户数量</span>
+                <h5>236</h5>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="cell eye">
+                <i class="fa fa-eye"></i>
+                <span>浏览量</span>
+                <h5>22435</h5>
+              </div>
+            </div>
+          </div>
+          <div class="chart">
+            <div id="main" style="width: 600px;height:400px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/node_modules/jquery/dist/jquery.js"></script>
+  <script src="/node_modules/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="/node_modules/nprogress/nprogress.js"></script>
+  <script src="/public/js/common.js"></script>
+	{% block script %}
+	{% endblock %}
+</body>
+
+</html>
