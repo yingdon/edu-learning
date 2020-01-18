@@ -52,38 +52,48 @@ router.get('/advert/add', (req, res, next) => {
 })
 
 router.post('/advert/add', (req, res, next) => {
-	// const body = req.body
-	
-	const form = new formidable.IncomingForm();
-	form.uploadDir = config.uploadDir		// 配置formidable文件上传接收路径
-	form.keepExtensions = true					// 配置保持文件原始的扩展名
-	
-	// fields 是接收到的表单中的普通数据字段
-	// files 是表单中文件上传上来的一些文件信息,例如文件大小,上传上来的文件路径等
-	form.parse(req, (err, fields, files) => {
-		if (err) {
-			return next(err)
-		}
-		const body = fields
-		body.image = basename(files.image.path)
-				
-		const advert = new Advert({
-			title:	body.title,
-			image:	body.image,
-			link:	body.link,
-			start_time:	body.start_time,
-			end_time:	body.end_time,
+	pmFormidable(req)
+		.then( result => {
+			const { fields, files } = result
+			const body = fields		// 普通表单字段
+			body.image = basename(files.image.path)		// 这里解析提取上传的文件名,保存到数据库
+					
+			const advert = new Advert({
+				title:	body.title,
+				image:	body.image,
+				link:	body.link,
+				start_time:	body.start_time,
+				end_time:	body.end_time,
+			})
+			// mongoose已经支持promise,这里save()返回的是一个promise对象,所以下面直接.then
+			return advert.save()
 		})
-		
-		advert.save((err, result) => {
-			if (err) {
-				return next(err)
-			}
+		.then(result => {
 			res.json({
 				err_code: 0
 			})
 		})
-	});
+		.catch(err => {
+			next(err)
+		})
+		
+	function pmFormidable(req) {
+		return new Promise((resolve, reject) => {
+			const form = new formidable.IncomingForm();
+			form.uploadDir = config.uploadDir		// 配置formidable文件上传接收路径
+			form.keepExtensions = true					// 配置保持文件原始的扩展名
+			
+			// fields 是接收到的表单中的普通数据字段
+			// files 是表单中文件上传上来的一些文件信息,例如文件大小,上传上来的文件路径等
+			form.parse(req, (err, fields, files) => {
+				if (err) {
+					reject(err)
+				}
+				// promise对象不能返回多个值,所以这里放在对象或数组里
+				resolve({ fields, files })
+			})
+		})
+	}
 })
 
 router.get('/advert/list', (req, res, next) => {
