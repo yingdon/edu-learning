@@ -42,8 +42,9 @@
 						<th>操作</th>
 					</tr>
 				</thead>
-				<tbody>
-					{% for item in adverts %}
+				<tbody id="tbody">
+					<!-- 服务端分页 -->
+					<!-- {% for item in adverts %}
 					<tr>
 						<td>0</td>
 						<td>{{ item.title }}</td>
@@ -59,13 +60,14 @@
 							<a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
 						</td>
 					</tr>
-					{% endfor %}
+					{% endfor %} -->
 				</tbody>
 			</table>
 		</div>
 		<!-- 分页 -->
-		<ul class="pagination pull-right">
-			{% if page != 1 %}
+		<ul id="pagination" class="pagination pull-right">
+			<!-- 服务端分页 -->
+			<!-- {% if page != 1 %}
 				<li><a href="/advert?page={{ page - 1 }}">上一页</a></li>
 			{% endif %}
 			{% for i in range(0, totalPage) -%}
@@ -77,8 +79,79 @@
 			{%- endfor %}
 			{% if page != totalPage %}
 				<li><a href="/advert?page={{ page + 1 }}">下一页</a></li>
-			{% endif %}
+			{% endif %} -->
 		</ul>
 	</div>
 </div>
+<!-- 客户端异步无刷新分页(使用art-template) -->
+<script type="text/template" id="tpl">
+	<% adverts.forEach(function (item, index) { %>
+		<tr>
+			<td><%= index + 1 %></td>
+			<td><%= item.title %></td>
+			<td>
+				<img src="/public/uploads/<%= item.image %>" style="width: 100px;" >
+			</td>
+			<td><%= item.link %></td>
+			<td><%= item.start_time %></td>
+			<td><%= item.end_time %></td>
+			<td>1</td>
+			<td>
+				<a href="javascript:;" class="btn btn-info btn-xs">编辑</a>
+				<a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+			</td>
+		</tr>
+	<% }) %>
+</script>
+{% endblock %}
+
+<!-- 客户端异步无刷新分页 -->
+{% block script %}
+<script src="/node_modules/art-template/dist/template-native.js" type="text/javascript" charset="utf-8"></script>
+<script src="node_modules/twbs-pagination/jquery.twbsPagination.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+	const pageSize = 5
+	$.ajax({
+		url: '/advert/count',
+		type: 'get',
+		success: (data) => {
+			if (data.err_code === 0) {
+				$('#pagination').twbsPagination({
+				  totalPages: Math.ceil(data.result / pageSize),
+				  visiblePages: 7,		// 显示7个页码
+					first: '首页',
+					prev: '上一页',
+					next: '下一页',
+					last: '最后一页',
+					/**
+					 * 	当点击某个页码的时候要执行的回调函数
+					 * 	异步无刷新分页，本质上就是当点击某一页的时候，发起一个ajax异步请求
+					 * 		获取当前页码对应的数据，然后在客户端做渲染
+					 */
+				  onPageClick: (event, page) => loadData(page)
+				})
+			}
+		}
+	})
+	
+	function loadData(page) {
+		$.ajax({
+			url: '/advert/list',
+			type: 'get',
+			data: {
+				page: page,
+				pageSize: pageSize
+			},
+			dataType: 'json',
+			success: (data) => {
+				if (data.err_code === 0 ) {
+					let htmlStr = template('tpl', {
+						adverts: data.result
+					})
+					$('#tbody').html(htmlStr)
+				}
+			}
+		})
+	}
+</script>
 {% endblock %}

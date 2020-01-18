@@ -6,7 +6,8 @@ import { basename } from 'path'
 
 const router = express.Router()
 
-router.get('/advert', (req, res, next) => {
+// 服务端分页
+/* router.get('/advert', (req, res, next) => {
 	let page = Number.parseInt(req.query.page, 10)
 	const paseSize = 5
 	
@@ -18,7 +19,7 @@ router.get('/advert', (req, res, next) => {
 			if (err) {
 				return next(err)
 			}
-			Advert.count((err, count) => {
+			Advert.countDocuments((err, count) => {
 				if (err) {
 					return next(err)
 				}
@@ -27,6 +28,23 @@ router.get('/advert', (req, res, next) => {
 				res.render('advert_list.html', { adverts, totalPage, page })
 			})
 		})
+}) */
+
+// 客户端异步无刷新分页
+router.get('/advert/count', (req, res, next) => {
+	Advert.countDocuments((err, count) => {
+		if (err) {
+			return next(err)
+		}
+		res.json({
+			err_code: 0,
+			result: count
+		})
+	})
+})
+
+router.get('/advert', (req, res, next) => {
+	res.render('advert_list.html')
 })
 
 router.get('/advert/add', (req, res, next) => {
@@ -69,15 +87,23 @@ router.post('/advert/add', (req, res, next) => {
 })
 
 router.get('/advert/list', (req, res, next) => {
-	Advert.find((err, docs) => {
-		if (err) {
-			return next(err)
-		}
-		res.json({
-			err_code: 0,
-			result: docs
+	let { page, pageSize } = req.query	// 解构赋值
+	page = Number.parseInt(page)
+	pageSize = Number.parseInt(pageSize)
+	
+	Advert
+		.find()
+		.skip((page - 1) * pageSize)
+		.limit(pageSize)
+		.exec((err, adverts) => {
+			if (err) {
+				return next(err)
+			}
+			res.json({
+				err_code: 0,
+				result: adverts
+			})
 		})
-	})
 })
 
 /**
